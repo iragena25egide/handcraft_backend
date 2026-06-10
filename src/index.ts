@@ -24,6 +24,10 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 // Serve uploaded files as static assets
 app.use("/uploads", express.static(path.join(__dirname, "../../uploads")));
 
+app.get("/", (req, res) => {
+  res.send("Handcraft API is running!");
+});
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", message: "Backend is running!" });
 });
