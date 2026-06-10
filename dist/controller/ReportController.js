@@ -26,12 +26,35 @@ class ReportController {
     getSalesRevenue(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const orders = yield this.orderRepository.find({ where: { status: "Processing" } });
-                const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total), 0);
-                res.json({
-                    totalOrders: orders.length,
-                    totalRevenue: totalRevenue
-                });
+                const user = req.user;
+                if (!user)
+                    return res.status(403).json({ message: "Forbidden" });
+                if (user.role === "SELLER") {
+                    const orders = yield this.orderRepository.find({
+                        where: { status: "Processing" },
+                        relations: ["items", "items.product", "items.product.seller"]
+                    });
+                    let totalRevenue = 0;
+                    let totalOrders = 0;
+                    orders.forEach(order => {
+                        let hasSellerItem = false;
+                        order.items.forEach(item => {
+                            var _a, _b;
+                            if (((_b = (_a = item.product) === null || _a === void 0 ? void 0 : _a.seller) === null || _b === void 0 ? void 0 : _b.id) === user.id) {
+                                totalRevenue += Number(item.priceAtPurchase) * item.quantity;
+                                hasSellerItem = true;
+                            }
+                        });
+                        if (hasSellerItem)
+                            totalOrders++;
+                    });
+                    res.json({ totalOrders, totalRevenue });
+                }
+                else {
+                    const orders = yield this.orderRepository.find({ where: { status: "Processing" } });
+                    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total), 0);
+                    res.json({ totalOrders: orders.length, totalRevenue });
+                }
             }
             catch (error) {
                 res.status(500).json({ message: "Error calculating revenue", error });
@@ -41,11 +64,16 @@ class ReportController {
     getLowStockProducts(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // Find products with stock quantity less than 5
-                const lowStockProducts = yield this.productRepository
-                    .createQueryBuilder("product")
-                    .where("product.stockQuantity < :threshold", { threshold: 5 })
-                    .getMany();
+                const user = req.user;
+                if (!user)
+                    return res.status(403).json({ message: "Forbidden" });
+                let query = this.productRepository.createQueryBuilder("product")
+                    .where("product.stockQuantity < :threshold", { threshold: 5 });
+                if (user.role === "SELLER") {
+                    query = query.leftJoin("product.seller", "seller")
+                        .andWhere("seller.id = :sellerId", { sellerId: user.id });
+                }
+                const lowStockProducts = yield query.getMany();
                 res.json(lowStockProducts);
             }
             catch (error) {

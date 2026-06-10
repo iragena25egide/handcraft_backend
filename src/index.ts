@@ -34,6 +34,11 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/notifications", notificationRoutes);
 
+console.log("=== STARTING BACKEND ===");
+console.log("TypeORM Options being used:");
+console.log(JSON.stringify(AppDataSource.options, null, 2));
+console.log("========================");
+
 AppDataSource.initialize()
   .then(() => {
     console.log("Database connection established successfully!");

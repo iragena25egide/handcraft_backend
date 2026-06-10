@@ -21,9 +21,11 @@ exports.createProductSchema = joi_1.default.object({
     price: joi_1.default.number().min(0).required(),
     originalPrice: joi_1.default.number().min(0).optional(),
     artisan: joi_1.default.string().required(),
-    image: joi_1.default.string().uri().required(),
+    image: joi_1.default.string().allow("").optional(),
     category: joi_1.default.string().required(),
-    stockQuantity: joi_1.default.number().integer().min(0).required()
+    stockQuantity: joi_1.default.number().integer().min(0).required(),
+    sellerId: joi_1.default.string().allow("").optional(),
+    images: joi_1.default.any().optional()
 });
 exports.updateProductSchema = joi_1.default.object({
     name: joi_1.default.string().optional(),
@@ -31,9 +33,11 @@ exports.updateProductSchema = joi_1.default.object({
     price: joi_1.default.number().min(0).optional(),
     originalPrice: joi_1.default.number().min(0).optional(),
     artisan: joi_1.default.string().optional(),
-    image: joi_1.default.string().uri().optional(),
+    image: joi_1.default.string().allow("").optional(),
     category: joi_1.default.string().optional(),
-    stockQuantity: joi_1.default.number().integer().min(0).optional()
+    stockQuantity: joi_1.default.number().integer().min(0).optional(),
+    sellerId: joi_1.default.string().allow("").optional(),
+    images: joi_1.default.any().optional()
 });
 exports.createOrderSchema = joi_1.default.object({
     items: joi_1.default.array().items(joi_1.default.object({
@@ -41,5 +45,9 @@ exports.createOrderSchema = joi_1.default.object({
         quantity: joi_1.default.number().integer().min(1).required()
     })).min(1).required(),
     guestName: joi_1.default.string().optional(),
-    guestPhone: joi_1.default.string().optional()
+    guestPhone: joi_1.default.string().optional(),
+    guestEmail: joi_1.default.string().email().optional(),
+    shippingAddress: joi_1.default.string().optional(),
+    shippingCity: joi_1.default.string().optional(),
+    shippingZipCode: joi_1.default.string().optional()
 });

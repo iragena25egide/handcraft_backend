@@ -41,6 +41,22 @@ __decorate([
     __metadata("design:type", String)
 ], Order.prototype, "guestPhone", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Order.prototype, "guestEmail", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Order.prototype, "shippingAddress", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Order.prototype, "shippingCity", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], Order.prototype, "shippingZipCode", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)(() => OrderItem_1.OrderItem, (orderItem) => orderItem.order, { cascade: true }),
     __metadata("design:type", Array)
 ], Order.prototype, "items", void 0);

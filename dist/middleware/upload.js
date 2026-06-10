@@ -7,25 +7,40 @@ exports.upload = void 0;
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
-// Ensure uploads directory exists
+const multer_storage_cloudinary_1 = require("multer-storage-cloudinary");
+const cloudinary_1 = __importDefault(require("../config/cloudinary"));
 const uploadDir = path_1.default.join(__dirname, "../../uploads");
 if (!fs_1.default.existsSync(uploadDir)) {
     fs_1.default.mkdirSync(uploadDir, { recursive: true });
 }
-const storage = multer_1.default.diskStorage({
-    destination: (_req, _file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (_req, file, cb) => {
-        const ext = path_1.default.extname(file.originalname).toLowerCase();
-        const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
-        cb(null, unique);
-    },
-});
+let storage;
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+    // Use Cloudinary if configured
+    storage = new multer_storage_cloudinary_1.CloudinaryStorage({
+        cloudinary: cloudinary_1.default,
+        params: {
+            folder: "handcraft",
+            allowed_formats: ["jpg", "jpeg", "png", "webp", "gif"],
+        },
+    });
+}
+else {
+    // Fallback to local storage
+    storage = multer_1.default.diskStorage({
+        destination: (_req, _file, cb) => {
+            cb(null, uploadDir);
+        },
+        filename: (_req, file, cb) => {
+            const ext = path_1.default.extname(file.originalname).toLowerCase();
+            const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}${ext}`;
+            cb(null, unique);
+        },
+    });
+}
 const fileFilter = (_req, file, cb) => {
     const allowed = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
     const ext = path_1.default.extname(file.originalname).toLowerCase();
-    if (allowed.includes(ext)) {
+    if (allowed.includes(ext) || file.mimetype.startsWith("image/")) {
         cb(null, true);
     }
     else {

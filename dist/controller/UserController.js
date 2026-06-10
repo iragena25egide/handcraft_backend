@@ -26,6 +26,10 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { name, email, password, role } = req.body;
+                // Security: Prevent SUPER_ADMIN registration via API
+                if (role === "SUPER_ADMIN") {
+                    return res.status(403).json({ message: "Cannot register as SUPER_ADMIN via API" });
+                }
                 // Check if user already exists
                 const existingUser = yield this.userRepository.findOneBy({ email });
                 if (existingUser) {
@@ -34,11 +38,16 @@ class UserController {
                 // Hash password
                 const salt = yield bcryptjs_1.default.genSalt(10);
                 const hashedPassword = yield bcryptjs_1.default.hash(password, salt);
-                // Save user
-                const user = this.userRepository.create({ name, email, password: hashedPassword, role });
+                // Save user with role or default to BUYER
+                const user = this.userRepository.create({
+                    name,
+                    email,
+                    password: hashedPassword,
+                    role: role || "BUYER"
+                });
                 yield this.userRepository.save(user);
-                // Create token
-                const token = jsonwebtoken_1.default.sign({ id: user.id }, this.JWT_SECRET, { expiresIn: "30d" });
+                // Create token with role included
+                const token = jsonwebtoken_1.default.sign({ id: user.id, role: user.role }, this.JWT_SECRET, { expiresIn: "30d" });
                 res.status(201).json({
                     id: user.id,
                     name: user.name,
@@ -66,8 +75,8 @@ class UserController {
                 if (!isMatch) {
                     return res.status(401).json({ message: "Invalid credentials" });
                 }
-                // Create token
-                const token = jsonwebtoken_1.default.sign({ id: user.id }, this.JWT_SECRET, { expiresIn: "30d" });
+                // Create token with role included
+                const token = jsonwebtoken_1.default.sign({ id: user.id, role: user.role }, this.JWT_SECRET, { expiresIn: "30d" });
                 res.json({
                     id: user.id,
                     name: user.name,

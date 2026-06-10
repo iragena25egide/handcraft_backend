@@ -40,19 +40,17 @@ const User_1 = require("./entity/User");
 const Product_1 = require("./entity/Product");
 const Order_1 = require("./entity/Order");
 const OrderItem_1 = require("./entity/OrderItem");
+const Notification_1 = require("./entity/Notification");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "postgres",
-    host: process.env.DB_HOST || "localhost",
-    port: parseInt(process.env.DB_PORT || "5432"),
-    username: process.env.DB_USER || "postgres",
-    password: process.env.DB_PASSWORD || "postgres",
-    database: process.env.DB_NAME || "handcraft",
+    url: "postgresql://postgres:HdtwwIpVklARmfrCdFPTPpwaOfMUFnDv@acela.proxy.rlwy.net:48360/railway",
+    ssl: { rejectUnauthorized: false },
     synchronize: true,
     uuidExtension: "pgcrypto",
     logging: false,
-    entities: [User_1.User, Product_1.Product, Order_1.Order, OrderItem_1.OrderItem],
+    entities: [User_1.User, Product_1.Product, Order_1.Order, OrderItem_1.OrderItem, Notification_1.Notification],
     migrations: [],
     subscribers: [],
 });
