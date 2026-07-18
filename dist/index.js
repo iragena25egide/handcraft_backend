@@ -24,6 +24,9 @@ app.use(express_1.default.json({ limit: "50mb" }));
 app.use(express_1.default.urlencoded({ limit: "50mb", extended: true }));
 // Serve uploaded files as static assets
 app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../../uploads")));
+app.get("/", (req, res) => {
+    res.send("Handcraft API is running!");
+});
 app.get("/api/health", (req, res) => {
     res.json({ status: "OK", message: "Backend is running!" });
 });
@@ -32,6 +35,10 @@ app.use("/api/users", userRoutes_1.default);
 app.use("/api/orders", orderRoutes_1.default);
 app.use("/api/reports", reportRoutes_1.default);
 app.use("/api/notifications", notificationRoutes_1.default);
+console.log("=== STARTING BACKEND ===");
+console.log("TypeORM Options being used:");
+console.log(JSON.stringify(data_source_1.AppDataSource.options, null, 2));
+console.log("========================");
 data_source_1.AppDataSource.initialize()
     .then(() => {
     console.log("Database connection established successfully!");

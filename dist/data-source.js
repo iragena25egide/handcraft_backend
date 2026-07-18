@@ -45,7 +45,7 @@ const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "postgres",
-    url: "postgresql://postgres:HdtwwIpVklARmfrCdFPTPpwaOfMUFnDv@acela.proxy.rlwy.net:48360/railway",
+    url: "postgresql://postgres:LEMXNJrrXqFbFDLqwKnblHqoSTVwhjsO@tokaido.proxy.rlwy.net:12938/railway",
     ssl: { rejectUnauthorized: false },
     synchronize: true,
     uuidExtension: "pgcrypto",
