@@ -8,6 +8,6 @@ const NotificationController_1 = require("../controller/NotificationController")
 const auth_1 = require("../middleware/auth");
 const router = express_1.default.Router();
 const controller = new NotificationController_1.NotificationController();
-router.get("/", auth_1.verifyToken, controller.getNotifications.bind(controller));
-router.put("/:id/read", auth_1.verifyToken, controller.markAsRead.bind(controller));
+router.get("/", auth_1.verifyToken, auth_1.isSeller, controller.getNotifications.bind(controller));
+router.put("/:id/read", auth_1.verifyToken, auth_1.isSeller, controller.markAsRead.bind(controller));
 exports.default = router;

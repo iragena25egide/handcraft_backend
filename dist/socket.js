@@ -16,14 +16,15 @@ const initSocket = (server) => {
         },
     });
     io.on("connection", (socket) => {
+        var _a;
         console.log("New socket connection:", socket.id);
-        socket.on("authenticate", (token) => {
+        const authenticateToken = (token) => {
             try {
                 const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
                 if (decoded.role === "SUPER_ADMIN") {
                     socket.join("room:admin");
                     console.log(`Socket ${socket.id} joined room:admin`);
-                    io.to("room:admin").emit("active_staff", { message: `Super Admin ${decoded.id} is online` });
+                    io.to("room:admin").emit("active_staff", { message: "Super Admin is online" });
                 }
                 else if (decoded.role === "SELLER") {
                     socket.join(`room:seller_${decoded.id}`);
@@ -38,6 +39,14 @@ const initSocket = (server) => {
                     message: "Invalid token",
                 });
             }
+        };
+        // Support handshake auth token
+        const handshakeToken = (_a = socket.handshake.auth) === null || _a === void 0 ? void 0 : _a.token;
+        if (handshakeToken) {
+            authenticateToken(handshakeToken);
+        }
+        socket.on("authenticate", (token) => {
+            authenticateToken(token);
         });
         socket.on("disconnect", () => {
             console.log("Socket disconnected:", socket.id);

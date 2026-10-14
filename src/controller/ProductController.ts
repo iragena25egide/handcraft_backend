@@ -97,9 +97,17 @@ export class ProductController {
         }
       }
 
-      if (productData.price) productData.price = parseFloat(productData.price);
-      if (productData.originalPrice) productData.originalPrice = parseFloat(productData.originalPrice);
-      if (productData.stockQuantity) productData.stockQuantity = parseInt(productData.stockQuantity, 10);
+      if (productData.price !== undefined && productData.price !== null) {
+        productData.price = parseFloat(productData.price);
+      }
+      if (productData.originalPrice !== undefined && productData.originalPrice !== null && productData.originalPrice !== "") {
+        productData.originalPrice = parseFloat(productData.originalPrice);
+      } else {
+        productData.originalPrice = null;
+      }
+      if (productData.stockQuantity !== undefined && productData.stockQuantity !== null) {
+        productData.stockQuantity = parseInt(productData.stockQuantity, 10);
+      }
       const product = this.productRepository.create(productData);
       const results = await this.productRepository.save(product);
 
@@ -180,9 +188,15 @@ export class ProductController {
         }
       }
 
-      if (updateData.price) updateData.price = parseFloat(updateData.price);
-      if (updateData.originalPrice) updateData.originalPrice = parseFloat(updateData.originalPrice);
-      if (updateData.stockQuantity) updateData.stockQuantity = parseInt(updateData.stockQuantity, 10);
+      if (updateData.price !== undefined && updateData.price !== null) {
+        updateData.price = parseFloat(updateData.price);
+      }
+      if (updateData.originalPrice !== undefined && updateData.originalPrice !== null) {
+        updateData.originalPrice = updateData.originalPrice === "" ? null : parseFloat(updateData.originalPrice);
+      }
+      if (updateData.stockQuantity !== undefined && updateData.stockQuantity !== null) {
+        updateData.stockQuantity = parseInt(updateData.stockQuantity, 10);
+      }
       
       if (req.user?.role === "SUPER_ADMIN" && updateData.sellerId) {
         updateData.seller = { id: parseInt(updateData.sellerId) } as any;

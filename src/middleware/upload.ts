@@ -4,7 +4,12 @@ import fs from "fs";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import cloudinary from "../config/cloudinary";
 
-const uploadDir = path.join(__dirname, "../../uploads");
+export const uploadDir = fs.existsSync(path.resolve(process.cwd(), "uploads"))
+  ? path.resolve(process.cwd(), "uploads")
+  : fs.existsSync(path.resolve(process.cwd(), "backend/uploads"))
+    ? path.resolve(process.cwd(), "backend/uploads")
+    : path.resolve(__dirname, "../../uploads");
+
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }

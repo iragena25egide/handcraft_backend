@@ -45,7 +45,8 @@ class NotificationController {
                     return res.status(403).json({ message: "Forbidden" });
                 }
                 const id = parseInt(req.params.id);
-                yield this.notificationRepository.update(id, { isRead: true });
+                const whereCondition = req.user.role === "SELLER" ? { id, userId: req.user.id } : { id };
+                yield this.notificationRepository.update(whereCondition, { isRead: true });
                 res.status(200).json({ message: "Marked as read" });
             }
             catch (error) {

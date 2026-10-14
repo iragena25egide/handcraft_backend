@@ -18,7 +18,7 @@ export const initSocket = (server: HttpServer) => {
   io.on("connection", (socket) => {
     console.log("New socket connection:", socket.id);
 
-    socket.on("authenticate", (token: string) => {
+    const authenticateToken = (token: string) => {
       try {
         const decoded = jwt.verify(token, JWT_SECRET) as {
           id: number;
@@ -28,7 +28,7 @@ export const initSocket = (server: HttpServer) => {
         if (decoded.role === "SUPER_ADMIN") {
           socket.join("room:admin");
           console.log(`Socket ${socket.id} joined room:admin`);
-          io.to("room:admin").emit("active_staff", { message: `Super Admin ${decoded.id} is online` });
+          io.to("room:admin").emit("active_staff", { message: "Super Admin is online" });
         } else if (decoded.role === "SELLER") {
           socket.join(`room:seller_${decoded.id}`);
           console.log(`Socket ${socket.id} joined room:seller_${decoded.id}`);
@@ -42,6 +42,16 @@ export const initSocket = (server: HttpServer) => {
           message: "Invalid token",
         });
       }
+    };
+
+    // Support handshake auth token
+    const handshakeToken = socket.handshake.auth?.token;
+    if (handshakeToken) {
+      authenticateToken(handshakeToken);
+    }
+
+    socket.on("authenticate", (token: string) => {
+      authenticateToken(token);
     });
 
     socket.on("disconnect", () => {

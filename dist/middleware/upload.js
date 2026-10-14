@@ -3,15 +3,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.upload = void 0;
+exports.upload = exports.uploadDir = void 0;
 const multer_1 = __importDefault(require("multer"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const multer_storage_cloudinary_1 = require("multer-storage-cloudinary");
 const cloudinary_1 = __importDefault(require("../config/cloudinary"));
-const uploadDir = path_1.default.join(__dirname, "../../uploads");
-if (!fs_1.default.existsSync(uploadDir)) {
-    fs_1.default.mkdirSync(uploadDir, { recursive: true });
+exports.uploadDir = fs_1.default.existsSync(path_1.default.resolve(process.cwd(), "uploads"))
+    ? path_1.default.resolve(process.cwd(), "uploads")
+    : fs_1.default.existsSync(path_1.default.resolve(process.cwd(), "backend/uploads"))
+        ? path_1.default.resolve(process.cwd(), "backend/uploads")
+        : path_1.default.resolve(__dirname, "../../uploads");
+if (!fs_1.default.existsSync(exports.uploadDir)) {
+    fs_1.default.mkdirSync(exports.uploadDir, { recursive: true });
 }
 let storage;
 if (process.env.CLOUDINARY_CLOUD_NAME) {
@@ -28,7 +32,7 @@ else {
     // Fallback to local storage
     storage = multer_1.default.diskStorage({
         destination: (_req, _file, cb) => {
-            cb(null, uploadDir);
+            cb(null, exports.uploadDir);
         },
         filename: (_req, file, cb) => {
             const ext = path_1.default.extname(file.originalname).toLowerCase();

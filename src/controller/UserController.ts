@@ -56,8 +56,13 @@ export class UserController {
     try {
       const { email, password } = req.body;
 
-      // Find user
-      const user = await this.userRepository.findOneBy({ email });
+      // Find user with password selected
+      const user = await this.userRepository
+        .createQueryBuilder("user")
+        .addSelect("user.password")
+        .where("user.email = :email", { email })
+        .getOne();
+
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
@@ -88,7 +93,9 @@ export class UserController {
         return res.status(403).json({ message: "Forbidden: Super Admin only" });
       }
       
-      const users = await this.userRepository.find();
+      const users = await this.userRepository.find({
+        order: { createdAt: "DESC" }
+      });
       res.json(users);
     } catch (error) {
       res.status(500).json({ message: "Error fetching users", error });
@@ -109,7 +116,8 @@ export class UserController {
 
       user.role = role;
       const results = await this.userRepository.save(user);
-      res.json(results);
+      const { password, ...safeUser } = results as any;
+      res.json(safeUser);
     } catch (error) {
       res.status(500).json({ message: "Error updating user role", error });
     }

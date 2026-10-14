@@ -107,12 +107,18 @@ class ProductController {
                         productData.image = productData.images[0]; // Set first image as main
                     }
                 }
-                if (productData.price)
+                if (productData.price !== undefined && productData.price !== null) {
                     productData.price = parseFloat(productData.price);
-                if (productData.originalPrice)
+                }
+                if (productData.originalPrice !== undefined && productData.originalPrice !== null && productData.originalPrice !== "") {
                     productData.originalPrice = parseFloat(productData.originalPrice);
-                if (productData.stockQuantity)
+                }
+                else {
+                    productData.originalPrice = null;
+                }
+                if (productData.stockQuantity !== undefined && productData.stockQuantity !== null) {
                     productData.stockQuantity = parseInt(productData.stockQuantity, 10);
+                }
                 const product = this.productRepository.create(productData);
                 const results = yield this.productRepository.save(product);
                 if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) === "SELLER") {
@@ -190,12 +196,15 @@ class ProductController {
                         updateData.image = updateData.images[0];
                     }
                 }
-                if (updateData.price)
+                if (updateData.price !== undefined && updateData.price !== null) {
                     updateData.price = parseFloat(updateData.price);
-                if (updateData.originalPrice)
-                    updateData.originalPrice = parseFloat(updateData.originalPrice);
-                if (updateData.stockQuantity)
+                }
+                if (updateData.originalPrice !== undefined && updateData.originalPrice !== null) {
+                    updateData.originalPrice = updateData.originalPrice === "" ? null : parseFloat(updateData.originalPrice);
+                }
+                if (updateData.stockQuantity !== undefined && updateData.stockQuantity !== null) {
                     updateData.stockQuantity = parseInt(updateData.stockQuantity, 10);
+                }
                 if (((_d = req.user) === null || _d === void 0 ? void 0 : _d.role) === "SUPER_ADMIN" && updateData.sellerId) {
                     updateData.seller = { id: parseInt(updateData.sellerId) };
                 }

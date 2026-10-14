@@ -8,6 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -65,8 +76,12 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { email, password } = req.body;
-                // Find user
-                const user = yield this.userRepository.findOneBy({ email });
+                // Find user with password selected
+                const user = yield this.userRepository
+                    .createQueryBuilder("user")
+                    .addSelect("user.password")
+                    .where("user.email = :email", { email })
+                    .getOne();
                 if (!user) {
                     return res.status(401).json({ message: "Invalid credentials" });
                 }
@@ -97,7 +112,9 @@ class UserController {
                 if (((_a = req.user) === null || _a === void 0 ? void 0 : _a.role) !== "SUPER_ADMIN") {
                     return res.status(403).json({ message: "Forbidden: Super Admin only" });
                 }
-                const users = yield this.userRepository.find();
+                const users = yield this.userRepository.find({
+                    order: { createdAt: "DESC" }
+                });
                 res.json(users);
             }
             catch (error) {
@@ -119,7 +136,8 @@ class UserController {
                     return res.status(404).json({ message: "User not found" });
                 user.role = role;
                 const results = yield this.userRepository.save(user);
-                res.json(results);
+                const _b = results, { password } = _b, safeUser = __rest(_b, ["password"]);
+                res.json(safeUser);
             }
             catch (error) {
                 res.status(500).json({ message: "Error updating user role", error });

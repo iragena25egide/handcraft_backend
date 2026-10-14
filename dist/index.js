@@ -7,37 +7,59 @@ require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
 const http_1 = __importDefault(require("http"));
 const cors_1 = __importDefault(require("cors"));
-const path_1 = __importDefault(require("path"));
 const data_source_1 = require("./data-source");
 const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const orderRoutes_1 = __importDefault(require("./routes/orderRoutes"));
 const reportRoutes_1 = __importDefault(require("./routes/reportRoutes"));
+const requestRoutes_1 = __importDefault(require("./routes/requestRoutes"));
 const notificationRoutes_1 = __importDefault(require("./routes/notificationRoutes"));
 const socket_1 = require("./socket");
+const upload_1 = require("./middleware/upload");
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 const port = process.env.PORT || 5000;
+// Initialize WebSockets
 (0, socket_1.initSocket)(server);
-app.use((0, cors_1.default)());
+// Middleware
+app.use((0, cors_1.default)({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express_1.default.json({ limit: "50mb" }));
 app.use(express_1.default.urlencoded({ limit: "50mb", extended: true }));
-// Serve uploaded files as static assets
-app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../../uploads")));
-app.get("/", (req, res) => {
+// Serve uploaded files as static assets reliably
+app.use("/uploads", express_1.default.static(upload_1.uploadDir));
+// Root info
+app.get("/", (_req, res) => {
     res.send("Handcraft API is running!");
 });
-app.get("/api/health", (req, res) => {
-    res.json({ status: "OK", message: "Backend is running!" });
+// Health check with database status
+app.get("/api/health", (_req, res) => {
+    res.json({
+        status: "OK",
+        message: "Handcraft API is healthy",
+        database: data_source_1.AppDataSource.isInitialized ? "connected" : "disconnected",
+        timestamp: new Date().toISOString(),
+    });
 });
+// Routes
 app.use("/api/products", productRoutes_1.default);
 app.use("/api/users", userRoutes_1.default);
 app.use("/api/orders", orderRoutes_1.default);
 app.use("/api/reports", reportRoutes_1.default);
 app.use("/api/notifications", notificationRoutes_1.default);
+app.use("/api/requests", requestRoutes_1.default);
+// Global Error Handler
+app.use((err, _req, res, _next) => {
+    console.error("Global Server Error:", err);
+    const status = err.status || err.statusCode || 500;
+    res.status(status).json(Object.assign({ message: err.message || "An unexpected error occurred" }, (process.env.NODE_ENV === "development" ? { stack: err.stack } : {})));
+});
 console.log("=== STARTING BACKEND ===");
-console.log("TypeORM Options being used:");
-console.log(JSON.stringify(data_source_1.AppDataSource.options, null, 2));
+console.log(`Port configured: ${port}`);
+console.log(`Static uploads folder: ${upload_1.uploadDir}`);
 console.log("========================");
 data_source_1.AppDataSource.initialize()
     .then(() => {
@@ -60,5 +82,8 @@ data_source_1.AppDataSource.initialize()
 })
     .catch((error) => console.log("Database connection failed: ", error));
 process.on("unhandledRejection", (err) => {
-    console.log("Unhandled Rejection:", err);
+    console.error("Unhandled Rejection:", err);
+});
+process.on("uncaughtException", (err) => {
+    console.error("Uncaught Exception:", err);
 });
